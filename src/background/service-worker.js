@@ -1,5 +1,5 @@
 import { buildRules, ALLOW_RULE_ID_BASE, BLOCK_RULE_ID_BASE } from '../shared/rules.js';
-import { addBlockedDomain, allowDomainTemporarily, getActiveAllowedDomains, getLocalState, getSessionState, setPaused } from '../shared/storage.js';
+import { addBlockedDomain, allowDomainTemporarily, getActiveAllowedDomains, getLocalState, getSessionState, removeBlockedDomain, setPaused } from '../shared/storage.js';
 
 const MAX_RULES_TO_CLEAR = 5000;
 
@@ -44,6 +44,12 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   (async () => {
     if (message.type === 'BLOCK_DOMAIN') {
       await addBlockedDomain(message.domain);
+      await rebuildRules();
+      return { ok: true };
+    }
+
+    if (message.type === 'UNBLOCK_DOMAIN') {
+      await removeBlockedDomain(message.domain);
       await rebuildRules();
       return { ok: true };
     }

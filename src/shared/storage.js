@@ -1,21 +1,34 @@
 import { browserApi } from './browser-api.js';
 
-const LOCAL_DEFAULTS = { blockedDomains: [] };
+const LOCAL_DEFAULTS = { blockedDomains: [], addedAtByDomain: {} };
 const SESSION_DEFAULTS = { paused: false, allowedUntilByDomain: {} };
 
 export async function getLocalState() {
   return { ...LOCAL_DEFAULTS, ...(await browserApi.storage.local.get(LOCAL_DEFAULTS)) };
 }
 
-export async function setBlockedDomains(blockedDomains) {
+export async function setBlockedDomains(blockedDomains, existingAddedAtByDomain = {}) {
   const unique = [...new Set(blockedDomains)].sort();
-  await browserApi.storage.local.set({ blockedDomains: unique });
+  const now = Date.now();
+  const addedAtByDomain = Object.fromEntries(
+    unique.map((domain) => [domain, existingAddedAtByDomain[domain] ?? now]),
+  );
+
+  await browserApi.storage.local.set({ blockedDomains: unique, addedAtByDomain });
   return unique;
 }
 
 export async function addBlockedDomain(domain) {
   const state = await getLocalState();
-  return setBlockedDomains([...state.blockedDomains, domain]);
+  return setBlockedDomains([...state.blockedDomains, domain], state.addedAtByDomain);
+}
+
+export async function removeBlockedDomain(domain) {
+  const state = await getLocalState();
+  const blockedDomains = state.blockedDomains.filter((blockedDomain) => blockedDomain !== domain);
+  const { [domain]: _removed, ...addedAtByDomain } = state.addedAtByDomain;
+  await browserApi.storage.local.set({ blockedDomains, addedAtByDomain });
+  return blockedDomains;
 }
 
 export async function getSessionState() {

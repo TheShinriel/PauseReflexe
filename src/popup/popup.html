@@ -14,6 +14,19 @@
         <input id="pauseSwitch" type="checkbox" />
         <span>Désactiver les blocages pour cette session</span>
       </label>
+
+      <details id="blockedSitesPanel">
+        <summary>Sites bloqués</summary>
+        <div class="sort-row">
+          <label for="sortMode">Tri</label>
+          <select id="sortMode">
+            <option value="alphabetical">A-Z</option>
+            <option value="addedAtDesc">Ajout récent</option>
+          </select>
+        </div>
+        <ul id="blockedSitesList"></ul>
+      </details>
+
       <p id="status" role="status"></p>
     </main>
     <script type="module" src="popup.js"></script>
