@@ -1,5 +1,6 @@
 import { buildRules, ALLOW_RULE_ID_BASE, BLOCK_RULE_ID_BASE } from '../shared/rules.js';
 import { addBlockedDomain, allowDomainTemporarily, getActiveAllowedDomains, getLocalState, getSessionState, removeBlockedDomain, setPaused } from '../shared/storage.js';
+import { handleRuntimeMessage } from './messages.js';
 
 const MAX_RULES_TO_CLEAR = 5000;
 
@@ -32,6 +33,16 @@ export async function rebuildRules() {
   }
 }
 
+const messageDependencies = {
+  addBlockedDomain,
+  allowDomainTemporarily,
+  getLocalState,
+  getSessionState,
+  rebuildRules,
+  removeBlockedDomain,
+  setPaused,
+};
+
 chrome.runtime.onInstalled.addListener(() => {
   rebuildRules();
 });
@@ -41,39 +52,9 @@ chrome.runtime.onStartup.addListener(() => {
 });
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  (async () => {
-    if (message.type === 'BLOCK_DOMAIN') {
-      await addBlockedDomain(message.domain);
-      await rebuildRules();
-      return { ok: true };
-    }
-
-    if (message.type === 'UNBLOCK_DOMAIN') {
-      await removeBlockedDomain(message.domain);
-      await rebuildRules();
-      return { ok: true };
-    }
-
-    if (message.type === 'SET_PAUSED') {
-      await setPaused(Boolean(message.paused));
-      await rebuildRules();
-      return { ok: true };
-    }
-
-    if (message.type === 'ALLOW_TEMPORARILY') {
-      await allowDomainTemporarily(message.domain, Number(message.minutes));
-      await rebuildRules();
-      return { ok: true };
-    }
-
-    if (message.type === 'GET_STATE') {
-      const local = await getLocalState();
-      const session = await getSessionState();
-      return { ok: true, ...local, ...session };
-    }
-
-    return { ok: false, error: 'Unknown message' };
-  })().then(sendResponse).catch((error) => sendResponse({ ok: false, error: error.message }));
+  handleRuntimeMessage(message, messageDependencies)
+    .then(sendResponse)
+    .catch((error) => sendResponse({ ok: false, error: error.message }));
 
   return true;
 });
