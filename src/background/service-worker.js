@@ -1,6 +1,7 @@
+import { handleRuntimeMessage } from './messages.js';
+import { debug } from '../shared/debug.js';
 import { buildRules, ALLOW_RULE_ID_BASE, BLOCK_RULE_ID_BASE } from '../shared/rules.js';
 import { addBlockedDomain, allowDomainTemporarily, getActiveAllowedDomains, getLocalState, getSessionState, removeBlockedDomain, setPaused } from '../shared/storage.js';
-import { handleRuntimeMessage } from './messages.js';
 
 const MAX_RULES_TO_CLEAR = 5000;
 
@@ -10,6 +11,8 @@ async function clearManagedRules() {
     .map((rule) => rule.id)
     .filter((id) => (id >= BLOCK_RULE_ID_BASE && id < BLOCK_RULE_ID_BASE + MAX_RULES_TO_CLEAR)
       || (id >= ALLOW_RULE_ID_BASE && id < ALLOW_RULE_ID_BASE + MAX_RULES_TO_CLEAR));
+
+  debug('dnr:clear-managed-rules', { existingCount: existing.length, removeCount: removeRuleIds.length });
 
   if (removeRuleIds.length > 0) {
     await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds });
@@ -27,10 +30,19 @@ export async function rebuildRules() {
     blockedPageUrl: chrome.runtime.getURL('/blocked/blocked.html'),
   });
 
+  debug('dnr:rebuild:start', {
+    blockedCount: local.blockedDomains.length,
+    allowedCount: allowedDomains.length,
+    paused: session.paused,
+    addRuleCount: addRules.length,
+  });
+
   await clearManagedRules();
   if (addRules.length > 0) {
     await chrome.declarativeNetRequest.updateDynamicRules({ addRules });
   }
+
+  debug('dnr:rebuild:done', { addRuleCount: addRules.length });
 }
 
 const messageDependencies = {
@@ -41,13 +53,16 @@ const messageDependencies = {
   rebuildRules,
   removeBlockedDomain,
   setPaused,
+  debug,
 };
 
 chrome.runtime.onInstalled.addListener(() => {
+  debug('lifecycle:on-installed');
   rebuildRules();
 });
 
 chrome.runtime.onStartup.addListener(() => {
+  debug('lifecycle:on-startup');
   setPaused(false).then(rebuildRules);
 });
 
