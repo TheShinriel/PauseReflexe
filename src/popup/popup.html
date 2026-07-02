@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="popup.css" />
+    <title>Site Blocker</title>
+  </head>
+  <body>
+    <main>
+      <h1>Site Blocker</h1>
+      <p id="domain" class="domain">Chargement…</p>
+      <button id="blockButton" type="button">Bloquer ce site</button>
+      <label class="switch-row">
+        <input id="pauseSwitch" type="checkbox" />
+        <span>Désactiver les blocages pour cette session</span>
+      </label>
+      <p id="status" role="status"></p>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

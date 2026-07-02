@@ -1,0 +1,52 @@
+body {
+  color: #17202a;
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  width: 320px;
+}
+
+main {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+h1 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.domain {
+  background: #f2f4f7;
+  border-radius: 8px;
+  font-family: ui-monospace, monospace;
+  margin: 0;
+  padding: 8px;
+}
+
+button {
+  background: #1f6feb;
+  border: 0;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 10px;
+}
+
+button:disabled {
+  background: #9aa4b2;
+  cursor: not-allowed;
+}
+
+.switch-row {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+#status {
+  color: #52616f;
+  margin: 0;
+  min-height: 1.2em;
+}

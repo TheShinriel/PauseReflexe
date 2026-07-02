@@ -1,0 +1,14 @@
+{
+  "name": "site-blocker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "test:run": "vitest run",
+    "validate:manifest": "node -e \"JSON.parse(require('fs').readFileSync('src/manifest.json','utf8')); console.log('manifest ok')\""
+  },
+  "devDependencies": {
+    "vitest": "^4.1.9"
+  }
+}
