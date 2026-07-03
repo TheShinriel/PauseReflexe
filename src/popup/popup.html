@@ -25,18 +25,22 @@
       </section>
 
       <section class="app-card session-card" aria-labelledby="sessionTitle">
-        <div>
-          <h2 id="sessionTitle" class="section-title">Session</h2>
-          <p class="muted">Pause temporaire jusqu’à fermeture du navigateur ou réactivation.</p>
-        </div>
-        <label class="switch-row">
-          <input id="pauseSwitch" type="checkbox" />
-          <span>Désactiver les blocages</span>
-        </label>
+        <details id="sessionPanel">
+          <summary>
+            <span id="sessionTitle">Déblocage ponctuel</span>
+          </summary>
+          <div class="session-content">
+            <p class="muted">Pause temporaire jusqu’à fermeture du navigateur ou réactivation.</p>
+            <label class="switch-row">
+              <input id="pauseSwitch" type="checkbox" />
+              <span>Désactiver les blocages</span>
+            </label>
+          </div>
+        </details>
       </section>
 
       <section class="app-card blocked-card" aria-labelledby="blockedSitesTitle">
-        <details id="blockedSitesPanel" open>
+        <details id="blockedSitesPanel">
           <summary>
             <span id="blockedSitesTitle">Sites bloqués</span>
             <span id="blockedCount" class="count-pill">0</span>

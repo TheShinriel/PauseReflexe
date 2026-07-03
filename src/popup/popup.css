@@ -40,10 +40,16 @@ h1 {
   justify-self: start;
 }
 
+.session-content {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
 .session-card .muted {
   font-size: 12px;
   line-height: 1.35;
-  margin: 4px 0 0;
+  margin: 0;
 }
 
 .switch-row {
