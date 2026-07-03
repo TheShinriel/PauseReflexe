@@ -1,7 +1,8 @@
 {
-  "name": "site-blocker",
+  "name": "pause-reflexe",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "test": "vitest",
