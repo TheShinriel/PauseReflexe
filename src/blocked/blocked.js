@@ -1,16 +1,16 @@
 import { debug } from '../shared/debug.js';
-
-const DURATIONS = [5, 10, 30];
+import { BYPASS_DURATIONS_MINUTES, getDefaultDuration, getDurationLabel } from '../shared/durations.js';
 
 const domainEl = document.querySelector('#domain');
-const durationInput = document.querySelector('#duration');
 const durationLabel = document.querySelector('#durationLabel');
+const durationOptionsEl = document.querySelector('#durationOptions');
 const continueButton = document.querySelector('#continueButton');
 const statusEl = document.querySelector('#status');
 
 const params = new URLSearchParams(window.location.search);
 const domain = params.get('domain');
 const originalUrl = extractOriginalUrl();
+let selectedDuration = getDefaultDuration();
 
 domainEl.textContent = domain || 'ce site';
 debug('blocked-page:init', { domain, hasOriginalUrl: Boolean(originalUrl) });
@@ -23,15 +23,27 @@ function extractOriginalUrl() {
 }
 
 function selectedMinutes() {
-  return DURATIONS[Number(durationInput.value)] ?? 10;
+  return selectedDuration;
 }
 
-function updateLabel() {
-  durationLabel.textContent = `${selectedMinutes()} min`;
-  debug('blocked-page:duration-change', { minutes: selectedMinutes() });
+function updateDuration(minutes) {
+  selectedDuration = BYPASS_DURATIONS_MINUTES.includes(minutes) ? minutes : getDefaultDuration();
+  durationLabel.textContent = getDurationLabel(selectedDuration);
+  continueButton.textContent = `Continuer pour ${getDurationLabel(selectedDuration)}`;
+
+  for (const button of durationOptionsEl.querySelectorAll('[data-minutes]')) {
+    const isSelected = Number(button.dataset.minutes) === selectedDuration;
+    button.setAttribute('aria-pressed', String(isSelected));
+  }
+
+  debug('blocked-page:duration-change', { minutes: selectedDuration });
 }
 
-durationInput.addEventListener('input', updateLabel);
+durationOptionsEl.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-minutes]');
+  if (!button) return;
+  updateDuration(Number(button.dataset.minutes));
+});
 
 continueButton.addEventListener('click', async () => {
   debug('blocked-page:allow-click', { domain, hasOriginalUrl: Boolean(originalUrl), minutes: selectedMinutes() });
@@ -56,9 +68,9 @@ continueButton.addEventListener('click', async () => {
     return;
   }
 
-  statusEl.textContent = `Débloqué pour ${minutes} minutes.`;
+  statusEl.textContent = `Débloqué pour ${getDurationLabel(minutes)}.`;
   debug('blocked-page:redirect-original', { originalUrl });
   window.location.replace(originalUrl);
 });
 
-updateLabel();
+updateDuration(selectedDuration);

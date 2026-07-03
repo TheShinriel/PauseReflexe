@@ -38,20 +38,51 @@ function showReminder(domain) {
   debug('content:reminder-show', { domain });
   const banner = document.createElement('div');
   banner.id = 'site-blocker-reminder';
-  banner.textContent = `Rappel doux : tu avais bloqué ${domain}. Est-ce encore utile d’être ici ?`;
+
+  const title = document.createElement('strong');
+  title.textContent = 'Rappel doux';
+
+  const message = document.createElement('span');
+  message.textContent = `Tu avais bloqué ${domain}. Est-ce encore utile d’être ici ?`;
+
+  const dismiss = document.createElement('span');
+  dismiss.textContent = 'Masquer';
+
+  banner.append(title, message, dismiss);
   Object.assign(banner.style, {
     position: 'fixed',
     left: '50%',
     bottom: '24px',
     transform: 'translateX(-50%)',
     zIndex: '2147483647',
-    maxWidth: '520px',
-    padding: '12px 16px',
-    borderRadius: '999px',
-    background: '#17202a',
-    color: 'white',
-    font: '14px system-ui, sans-serif',
-    boxShadow: '0 10px 30px rgb(0 0 0 / 25%)',
+    maxWidth: '560px',
+    width: 'calc(100% - 32px)',
+    padding: '14px 16px',
+    border: '1px solid #bfdbfe',
+    borderRadius: '16px',
+    background: '#ffffff',
+    color: '#17202a',
+    font: '14px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    boxShadow: '0 16px 45px rgb(23 32 42 / 14%)',
+    display: 'grid',
+    gap: '4px',
+  });
+  Object.assign(title.style, {
+    color: '#1d4ed8',
+    fontSize: '12px',
+    letterSpacing: '.08em',
+    textTransform: 'uppercase',
+  });
+  Object.assign(message.style, {
+    color: '#667085',
+    lineHeight: '1.4',
+  });
+  Object.assign(dismiss.style, {
+    color: '#2563eb',
+    cursor: 'pointer',
+    fontWeight: '700',
+    justifySelf: 'start',
+    marginTop: '4px',
   });
   banner.addEventListener('click', () => {
     debug('content:reminder-dismiss-click', { domain });

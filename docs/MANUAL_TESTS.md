@@ -11,14 +11,15 @@
 7. Click “Bloquer ce site”.
 8. Reload `https://example.com`.
 9. Expected: redirected to the extension blocked page.
-10. Move slider to 5/10/30 min and click temporary unblock.
-11. Expected: original site opens.
+10. Choose 5/10/30 min with the segmented duration buttons and click temporary unblock.
+11. Expected: CTA label follows the selected duration and original site opens.
 12. Open “Sites bloqués” in the popup.
-13. Expected: current site appears first if blocked.
+13. Expected: current site appears first if blocked, with coherent card/badge styling.
 14. Click “Débloquer”.
 15. Expected: site is removed from the list and becomes accessible after reload.
 16. Toggle pause in popup.
-17. Expected: blocked sites are accessible until pause is disabled or browser closes.
+17. Expected: global badge switches between active/paused and blocked sites are accessible until pause is disabled or browser closes.
+18. Visual check: popup, blocked page, and reminder share the same calm blue/white visual language.
 
 ## Windows Chrome / Firefox later
 

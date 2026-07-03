@@ -6,26 +6,51 @@
     <title>Site Blocker</title>
   </head>
   <body>
-    <main>
-      <h1>Site Blocker</h1>
-      <p id="domain" class="domain">Chargement…</p>
-      <button id="blockButton" type="button">Bloquer ce site</button>
-      <label class="switch-row">
-        <input id="pauseSwitch" type="checkbox" />
-        <span>Désactiver les blocages pour cette session</span>
-      </label>
-
-      <details id="blockedSitesPanel">
-        <summary>Sites bloqués</summary>
-        <div class="sort-row">
-          <label for="sortMode">Tri</label>
-          <select id="sortMode">
-            <option value="alphabetical">A-Z</option>
-            <option value="addedAtDesc">Ajout récent</option>
-          </select>
+    <main class="popup-shell">
+      <header class="popup-header">
+        <div>
+          <p class="eyebrow">Pause volontaire</p>
+          <h1>Site Blocker</h1>
         </div>
-        <ul id="blockedSitesList"></ul>
-      </details>
+        <span id="globalStatus" class="status-pill active">Actif</span>
+      </header>
+
+      <section class="app-card current-site-card" aria-labelledby="currentSiteTitle">
+        <div class="section-heading">
+          <h2 id="currentSiteTitle" class="section-title">Site courant</h2>
+          <span id="domainStatus" class="status-pill safe">Non bloqué</span>
+        </div>
+        <p id="domain" class="domain-chip">Chargement…</p>
+        <button id="blockButton" class="button-primary" type="button">Bloquer ce site</button>
+      </section>
+
+      <section class="app-card session-card" aria-labelledby="sessionTitle">
+        <div>
+          <h2 id="sessionTitle" class="section-title">Session</h2>
+          <p class="muted">Pause temporaire jusqu’à fermeture du navigateur ou réactivation.</p>
+        </div>
+        <label class="switch-row">
+          <input id="pauseSwitch" type="checkbox" />
+          <span>Désactiver les blocages</span>
+        </label>
+      </section>
+
+      <section class="app-card blocked-card" aria-labelledby="blockedSitesTitle">
+        <details id="blockedSitesPanel" open>
+          <summary>
+            <span id="blockedSitesTitle">Sites bloqués</span>
+            <span id="blockedCount" class="count-pill">0</span>
+          </summary>
+          <div class="sort-row">
+            <label for="sortMode" class="muted">Tri</label>
+            <select id="sortMode">
+              <option value="alphabetical">A-Z</option>
+              <option value="addedAtDesc">Ajout récent</option>
+            </select>
+          </div>
+          <ul id="blockedSitesList"></ul>
+        </details>
+      </section>
 
       <p id="status" role="status"></p>
     </main>

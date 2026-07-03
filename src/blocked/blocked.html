@@ -6,22 +6,32 @@
     <title>Site bloqué</title>
   </head>
   <body>
-    <main class="card">
-      <p class="eyebrow">Pause volontaire</p>
-      <h1>Ce site est bloqué</h1>
-      <p>
-        Tu as choisi de bloquer <strong id="domain">ce site</strong> pour réduire cette habitude.
-      </p>
-      <p class="soft">
-        Si tu veux vraiment y aller maintenant, choisis une durée temporaire.
-      </p>
+    <main class="blocked-shell">
+      <section class="app-card blocked-card">
+        <p class="eyebrow">Pause volontaire</p>
+        <h1>Ce site est bloqué</h1>
+        <p class="lead">
+          Tu as choisi de limiter <strong id="domain" class="domain-chip">ce site</strong> pour casser une habitude, pas pour te punir.
+        </p>
+        <p class="muted">
+          Si tu veux vraiment continuer maintenant, choisis une exception temporaire.
+        </p>
 
-      <label for="duration">Durée temporaire : <strong id="durationLabel">10 min</strong></label>
-      <input id="duration" type="range" min="0" max="2" step="1" value="1" />
-      <div class="ticks"><span>5 min</span><span>10 min</span><span>30 min</span></div>
+        <div class="duration-panel" aria-labelledby="durationTitle">
+          <div class="section-heading">
+            <h2 id="durationTitle" class="section-title">Exception temporaire</h2>
+            <span id="durationLabel" class="status-pill warning">10 min</span>
+          </div>
+          <div id="durationOptions" class="segment-group" role="group" aria-label="Durée temporaire">
+            <button class="segment-button" type="button" data-minutes="5">5 min</button>
+            <button class="segment-button" type="button" data-minutes="10" aria-pressed="true">10 min</button>
+            <button class="segment-button" type="button" data-minutes="30">30 min</button>
+          </div>
+        </div>
 
-      <button id="continueButton" type="button">Débloquer temporairement</button>
-      <p id="status" role="status"></p>
+        <button id="continueButton" class="button-primary" type="button">Continuer pour 10 min</button>
+        <p id="status" role="status"></p>
+      </section>
     </main>
     <script type="module" src="blocked.js"></script>
   </body>

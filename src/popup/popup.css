@@ -1,109 +1,183 @@
+@import url('../shared/theme.css');
+
 body {
-  color: #17202a;
-  font-family: system-ui, sans-serif;
+  background: var(--color-bg);
   margin: 0;
-  width: 340px;
+  width: 360px;
 }
 
-main {
+.popup-shell {
   display: grid;
-  gap: 12px;
-  padding: 16px;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.popup-header {
+  align-items: center;
+  display: flex;
+  gap: var(--space-3);
+  justify-content: space-between;
 }
 
 h1 {
-  font-size: 18px;
-  margin: 0;
+  font-size: 19px;
+  letter-spacing: -.02em;
+  line-height: 1.1;
+  margin: 3px 0 0;
 }
 
-.domain {
-  background: #f2f4f7;
-  border-radius: 8px;
-  font-family: ui-monospace, monospace;
-  margin: 0;
-  padding: 8px;
+.current-site-card,
+.session-card {
+  display: grid;
+  gap: var(--space-3);
 }
 
-button {
-  background: #1f6feb;
-  border: 0;
-  border-radius: 8px;
-  color: white;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 10px;
+.current-site-card .button-primary {
+  width: 100%;
 }
 
-button.secondary {
-  background: #eef2f7;
-  color: #17202a;
-  padding: 6px 8px;
+.domain-chip {
+  justify-self: start;
 }
 
-button.danger {
-  color: #b42318;
-}
-
-button:disabled {
-  background: #9aa4b2;
-  cursor: not-allowed;
+.session-card .muted {
+  font-size: 12px;
+  line-height: 1.35;
+  margin: 4px 0 0;
 }
 
 .switch-row {
   align-items: center;
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
   display: flex;
-  gap: 8px;
+  font-weight: 700;
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+
+.switch-row input {
+  accent-color: var(--color-primary);
+  height: 18px;
+  width: 18px;
 }
 
 details {
-  border-top: 1px solid #e5e7eb;
-  padding-top: 10px;
+  display: grid;
+  gap: var(--space-3);
 }
 
 summary {
+  align-items: center;
   cursor: pointer;
-  font-weight: 700;
+  display: flex;
+  font-weight: 800;
+  justify-content: space-between;
+  list-style: none;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+summary::after {
+  color: var(--color-muted);
+  content: '▾';
+  font-size: 13px;
+  margin-left: var(--space-2);
+  transition: transform .15s ease;
+}
+
+details:not([open]) summary::after {
+  transform: rotate(-90deg);
+}
+
+.count-pill {
+  background: var(--color-primary-soft);
+  border-radius: var(--radius-pill);
+  color: var(--color-primary-strong);
+  font-size: 12px;
+  font-weight: 800;
+  margin-left: auto;
+  padding: 3px 8px;
 }
 
 .sort-row {
   align-items: center;
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   justify-content: space-between;
-  margin: 10px 0;
+  margin: var(--space-3) 0;
+}
+
+select {
+  background: white;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  padding: 6px 8px;
 }
 
 ul {
   display: grid;
-  gap: 6px;
+  gap: var(--space-2);
   list-style: none;
   margin: 0;
-  max-height: 180px;
+  max-height: 190px;
   overflow: auto;
   padding: 0;
 }
 
 li {
   align-items: center;
-  background: #f8fafc;
-  border-radius: 8px;
+  background: var(--color-surface-muted);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   justify-content: space-between;
-  padding: 8px;
+  padding: var(--space-2);
 }
 
 li.current {
-  border: 1px solid #1f6feb;
+  background: var(--color-primary-soft);
+  border-color: #bfdbfe;
 }
 
 li.empty {
-  color: #52616f;
+  color: var(--color-muted);
   display: block;
+  font-size: 13px;
+  padding: var(--space-3);
+  text-align: center;
+}
+
+.site-name {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.site-domain {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 750;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site-meta {
+  color: var(--color-muted);
+  font-size: 11px;
 }
 
 #status {
-  color: #52616f;
+  color: var(--color-muted);
+  font-size: 12px;
   margin: 0;
   min-height: 1.2em;
+  text-align: center;
 }
