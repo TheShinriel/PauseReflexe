@@ -23,7 +23,11 @@
 19. Expected: global badge switches to paused and sites in pause are accessible until pause is disabled or browser closes.
 20. Toggle the quick pause switch again.
 21. Expected: pauses are re-enabled without confirmation.
-22. Visual check: popup, blocked page, and reminder share the same calm blue/white visual language.
+22. Create a 5 min temporary exception and keep the tab open.
+23. Expected: at expiry, a “Temps écoulé” banner appears with “Fermer l’onglet” and “Ignorer”.
+24. Click “Fermer l’onglet”.
+25. Expected: the current tab closes.
+26. Visual check: popup, pause page, reminder, and expiry alert share the same calm blue/white visual language.
 
 ## Windows Chrome / Firefox later
 

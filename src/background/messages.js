@@ -1,4 +1,4 @@
-export async function handleRuntimeMessage(message, dependencies) {
+export async function handleRuntimeMessage(message, dependencies, sender = {}) {
   const debug = dependencies.debug ?? (() => {});
   debug('runtime:received', { type: message.type, domain: message.domain, minutes: message.minutes, paused: message.paused });
 
@@ -46,6 +46,19 @@ export async function handleRuntimeMessage(message, dependencies) {
       temporaryAllowCount: Object.keys(session.allowedUntilByDomain).length,
     });
     return { ok: true, ...local, ...session };
+  }
+
+  if (message.type === 'CLOSE_CURRENT_TAB') {
+    const tabId = sender.tab?.id;
+    debug('runtime:close-current-tab:start', { tabId });
+    if (!Number.isInteger(tabId)) {
+      debug('runtime:close-current-tab:missing-tab');
+      return { ok: false, error: 'Impossible de fermer cet onglet.' };
+    }
+
+    await dependencies.closeTab(tabId);
+    debug('runtime:close-current-tab:done', { tabId });
+    return { ok: true };
   }
 
   debug('runtime:unknown-message', { type: message.type });

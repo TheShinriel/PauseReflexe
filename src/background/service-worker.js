@@ -53,6 +53,7 @@ const messageDependencies = {
   rebuildRules,
   removeBlockedDomain,
   setPaused,
+  closeTab: (tabId) => chrome.tabs.remove(tabId),
   debug,
 };
 
@@ -66,8 +67,8 @@ chrome.runtime.onStartup.addListener(() => {
   setPaused(false).then(rebuildRules);
 });
 
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  handleRuntimeMessage(message, messageDependencies)
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  handleRuntimeMessage(message, messageDependencies, sender)
     .then(sendResponse)
     .catch((error) => sendResponse({ ok: false, error: error.message }));
 

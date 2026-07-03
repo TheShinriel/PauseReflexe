@@ -1,5 +1,7 @@
-const REMINDER_DELAY_MS = 10 * 60 * 1000;
+const SOFT_REMINDER_DELAY_MS = 10 * 60 * 1000;
 const DEBUG_PREFIX = '[pause-reflexe]';
+const REMINDER_ID = 'pause-reflexe-reminder';
+const EXPIRY_ALERT_ID = 'pause-reflexe-expiry-alert';
 
 function debug(event, details = undefined) {
   if (details === undefined) {
@@ -29,26 +31,7 @@ async function getSessionState() {
   return storage.get({ allowedUntilByDomain: {} });
 }
 
-function showReminder(domain) {
-  if (document.querySelector('#pause-reflexe-reminder')) {
-    debug('content:reminder-skipped-existing', { domain });
-    return;
-  }
-
-  debug('content:reminder-show', { domain });
-  const banner = document.createElement('div');
-  banner.id = 'pause-reflexe-reminder';
-
-  const title = document.createElement('strong');
-  title.textContent = 'Encore utile ?';
-
-  const message = document.createElement('span');
-  message.textContent = 'Tu avais ouvert ce site pour quelques minutes. Tu veux toujours rester ici ?';
-
-  const dismiss = document.createElement('span');
-  dismiss.textContent = 'Masquer';
-
-  banner.append(title, message, dismiss);
+function applyBannerStyle(banner) {
   Object.assign(banner.style, {
     position: 'fixed',
     left: '50%',
@@ -65,29 +48,92 @@ function showReminder(domain) {
     font: '14px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     boxShadow: '0 16px 45px rgb(23 32 42 / 14%)',
     display: 'grid',
-    gap: '4px',
+    gap: '8px',
   });
+}
+
+function applyTitleStyle(title) {
   Object.assign(title.style, {
     color: '#1d4ed8',
     fontSize: '12px',
     letterSpacing: '.08em',
     textTransform: 'uppercase',
   });
+}
+
+function applyMessageStyle(message) {
   Object.assign(message.style, {
     color: '#667085',
     lineHeight: '1.4',
   });
-  Object.assign(dismiss.style, {
-    color: '#2563eb',
-    cursor: 'pointer',
-    fontWeight: '700',
-    justifySelf: 'start',
+}
+
+function applyActionRowStyle(row) {
+  Object.assign(row.style, {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '8px',
     marginTop: '4px',
   });
-  banner.addEventListener('click', () => {
+}
+
+function applyLinkButtonStyle(button) {
+  Object.assign(button.style, {
+    background: 'transparent',
+    border: '0',
+    color: '#2563eb',
+    cursor: 'pointer',
+    font: 'inherit',
+    fontWeight: '700',
+    padding: '0',
+  });
+}
+
+function buildBanner({ id, titleText, messageText }) {
+  const banner = document.createElement('div');
+  banner.id = id;
+
+  const title = document.createElement('strong');
+  title.textContent = titleText;
+
+  const message = document.createElement('span');
+  message.textContent = messageText;
+
+  banner.append(title, message);
+  applyBannerStyle(banner);
+  applyTitleStyle(title);
+  applyMessageStyle(message);
+
+  return banner;
+}
+
+function showReminder(domain) {
+  if (document.querySelector(`#${REMINDER_ID}`) || document.querySelector(`#${EXPIRY_ALERT_ID}`)) {
+    debug('content:reminder-skipped-existing', { domain });
+    return;
+  }
+
+  debug('content:reminder-show', { domain });
+  const banner = buildBanner({
+    id: REMINDER_ID,
+    titleText: 'Encore utile ?',
+    messageText: 'Tu avais ouvert ce site pour quelques minutes. Tu veux toujours rester ici ?',
+  });
+
+  const dismiss = document.createElement('button');
+  dismiss.type = 'button';
+  dismiss.textContent = 'Masquer';
+  applyLinkButtonStyle(dismiss);
+  dismiss.addEventListener('click', () => {
     debug('content:reminder-dismiss-click', { domain });
     banner.remove();
   });
+
+  const actions = document.createElement('div');
+  applyActionRowStyle(actions);
+  actions.append(dismiss);
+  banner.append(actions);
+
   document.body.appendChild(banner);
   setTimeout(() => {
     debug('content:reminder-auto-dismiss', { domain });
@@ -95,19 +141,75 @@ function showReminder(domain) {
   }, 15000);
 }
 
+function showExpiryAlert(domain) {
+  document.querySelector(`#${REMINDER_ID}`)?.remove();
+  if (document.querySelector(`#${EXPIRY_ALERT_ID}`)) {
+    debug('content:expiry-alert-skipped-existing', { domain });
+    return;
+  }
+
+  debug('content:expiry-alert-show', { domain });
+  const banner = buildBanner({
+    id: EXPIRY_ALERT_ID,
+    titleText: 'Temps écoulé',
+    messageText: 'L’exception temporaire est terminée. Tu veux fermer cette page maintenant ?',
+  });
+
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.textContent = 'Fermer l’onglet';
+  applyLinkButtonStyle(close);
+  close.addEventListener('click', async () => {
+    debug('content:expiry-alert-close-click', { domain });
+    await chrome.runtime.sendMessage({ type: 'CLOSE_CURRENT_TAB' });
+  });
+
+  const ignore = document.createElement('button');
+  ignore.type = 'button';
+  ignore.textContent = 'Ignorer';
+  applyLinkButtonStyle(ignore);
+  ignore.addEventListener('click', () => {
+    debug('content:expiry-alert-ignore-click', { domain });
+    banner.remove();
+  });
+
+  const actions = document.createElement('div');
+  applyActionRowStyle(actions);
+  actions.append(close, ignore);
+  banner.append(actions);
+
+  document.body.appendChild(banner);
+}
+
+function getSoftReminderDelayMs(until, now) {
+  const remaining = until - now;
+  return remaining > SOFT_REMINDER_DELAY_MS ? SOFT_REMINDER_DELAY_MS : null;
+}
+
 (async () => {
   const domain = normalizeHost(window.location.hostname);
   debug('content:init', { domain, url: window.location.href });
   const { allowedUntilByDomain } = await getSessionState();
   const until = allowedUntilByDomain[domain];
+  const now = Date.now();
 
-  if (!until || until <= Date.now()) {
+  if (!until || until <= now) {
     debug('content:no-active-temporary-allow', { domain, until });
     return;
   }
 
-  debug('content:reminder-scheduled', { domain, delayMs: REMINDER_DELAY_MS, until });
+  const expiryDelayMs = until - now;
+  const reminderDelayMs = getSoftReminderDelayMs(until, now);
+
+  if (reminderDelayMs !== null) {
+    debug('content:reminder-scheduled', { domain, delayMs: reminderDelayMs, until });
+    setTimeout(() => {
+      showReminder(domain);
+    }, reminderDelayMs);
+  }
+
+  debug('content:expiry-alert-scheduled', { domain, delayMs: expiryDelayMs, until });
   setTimeout(() => {
-    showReminder(domain);
-  }, REMINDER_DELAY_MS);
+    showExpiryAlert(domain);
+  }, expiryDelayMs);
 })();

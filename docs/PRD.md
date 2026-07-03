@@ -46,10 +46,11 @@ Le besoin est un blocage volontaire, explicite, réversible temporairement, avec
    - Options MVP proposées : 5 min, 10 min, 30 min
    - 30 min est l’option maximale pour le MVP
 
-5. Rappel léger après 10 minutes
-   - Si l’utilisateur est encore sur un site temporairement débloqué après 10 minutes, afficher un rappel non agressif
+5. Rappel et alerte sur exception temporaire
+   - Pour les longues exceptions, afficher un rappel non agressif après 10 minutes
+   - À l’expiration de l’exception, si l’onglet est encore ouvert, afficher une alerte contextualisée
+   - Proposer de fermer l’onglet, sans fermeture automatique
    - Objectif : remettre l’intention initiale au premier plan
-   - Le rappel ne doit pas fermer la page ni bloquer brutalement
 
 ## Hors périmètre MVP
 
@@ -167,7 +168,8 @@ Raisons :
 - L’utilisateur peut débloquer temporairement via slider.
 - Le déblocage temporaire expire automatiquement.
 - Le switch de pause globale suspend les blocages jusqu’à fermeture navigateur ou réactivation.
-- Un rappel léger apparaît après 10 minutes sur un site temporairement débloqué.
+- Un rappel léger apparaît pendant les longues exceptions temporaires.
+- Une alerte apparaît à l’expiration d’une exception si l’onglet est encore ouvert, avec proposition de fermeture.
 
 ## Décisions ouvertes
 

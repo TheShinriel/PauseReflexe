@@ -10,6 +10,7 @@ function dependencies(overrides = {}) {
     rebuildRules: vi.fn().mockResolvedValue(undefined),
     removeBlockedDomain: vi.fn(),
     setPaused: vi.fn(),
+    closeTab: vi.fn(),
     debug: vi.fn(),
     ...overrides,
   };
@@ -45,5 +46,33 @@ describe('handleRuntimeMessage', () => {
     expect(debug).toHaveBeenCalledWith('runtime:received', expect.objectContaining({ type: 'UNBLOCK_DOMAIN', domain: 'example.com' }));
     expect(debug).toHaveBeenCalledWith('runtime:unblock-domain:start', { domain: 'example.com' });
     expect(debug).toHaveBeenCalledWith('runtime:unblock-domain:done', { domain: 'example.com' });
+  });
+
+  it('closes the sender tab from a content-script request', async () => {
+    const closeTab = vi.fn().mockResolvedValue(undefined);
+    const deps = dependencies({ closeTab });
+
+    const response = await handleRuntimeMessage(
+      { type: 'CLOSE_CURRENT_TAB' },
+      deps,
+      { tab: { id: 42 } },
+    );
+
+    expect(response).toEqual({ ok: true });
+    expect(closeTab).toHaveBeenCalledWith(42);
+  });
+
+  it('rejects close-tab requests without a sender tab', async () => {
+    const closeTab = vi.fn().mockResolvedValue(undefined);
+    const deps = dependencies({ closeTab });
+
+    const response = await handleRuntimeMessage(
+      { type: 'CLOSE_CURRENT_TAB' },
+      deps,
+      {},
+    );
+
+    expect(response).toEqual({ ok: false, error: 'Impossible de fermer cet onglet.' });
+    expect(closeTab).not.toHaveBeenCalled();
   });
 });

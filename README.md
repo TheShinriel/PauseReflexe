@@ -24,7 +24,9 @@ La promesse produit :
 - Afficher les sites en pause dans la popup.
 - Retirer un site de la liste.
 - Désactiver temporairement toutes les pauses pour la session, avec confirmation.
-- Afficher un rappel léger après quelques minutes sur une exception temporaire.
+- Afficher un rappel léger pendant les longues exceptions temporaires.
+- Alerter à l’expiration d’une exception si l’onglet est encore ouvert.
+- Proposer de fermer l’onglet expiré sans le fermer automatiquement.
 
 ## Ce que l’extension ne promet pas
 
@@ -96,8 +98,6 @@ npm run validate:manifest
 
 ## Roadmap courte
 
-- Alerter quand une exception temporaire expire alors qu’un onglet du domaine est encore ouvert.
-- Proposer de fermer l’onglet ou de prolonger l’exception.
 - Tester et ajuster le comportement Firefox.
 - Ajouter éventuellement une page d’options plus complète.
 - Import/export de la liste des sites en pause.
