@@ -3,38 +3,38 @@
   <head>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="popup.css" />
-    <title>Site Blocker</title>
+    <title>Pause Réflexe</title>
   </head>
   <body>
     <main class="popup-shell">
       <header class="popup-header">
         <div>
-          <p class="eyebrow">Pause volontaire</p>
-          <h1>Site Blocker</h1>
+          <p class="eyebrow">Changer une habitude</p>
+          <h1>Pause Réflexe</h1>
         </div>
-        <div class="quick-pause" aria-label="État des blocages">
+        <div class="quick-pause" aria-label="État des pauses">
           <span id="globalStatus" class="status-pill active">Actif</span>
-          <label class="quick-pause-switch" title="Désactiver les blocages pour cette session">
+          <label class="quick-pause-switch" title="Désactiver les pauses pour cette session">
             <input id="pauseSwitch" type="checkbox" />
             <span class="switch-track" aria-hidden="true"></span>
-            <span class="sr-only">Désactiver les blocages</span>
+            <span class="sr-only">Désactiver les pauses</span>
           </label>
         </div>
       </header>
 
       <section class="app-card current-site-card" aria-labelledby="currentSiteTitle">
         <div class="section-heading">
-          <h2 id="currentSiteTitle" class="section-title">Site courant</h2>
-          <span id="domainStatus" class="status-pill safe">Non bloqué</span>
+          <h2 id="currentSiteTitle" class="section-title">Ce site</h2>
+          <span id="domainStatus" class="status-pill safe">Pas en pause</span>
         </div>
         <p id="domain" class="domain-chip">Chargement…</p>
-        <button id="blockButton" class="button-primary" type="button">Bloquer ce site</button>
+        <button id="blockButton" class="button-primary" type="button">Mettre ce site en pause</button>
       </section>
 
       <section class="app-card blocked-card" aria-labelledby="blockedSitesTitle">
         <details id="blockedSitesPanel">
           <summary>
-            <span id="blockedSitesTitle">Sites bloqués</span>
+            <span id="blockedSitesTitle">Sites en pause</span>
             <span id="blockedCount" class="count-pill">0</span>
           </summary>
           <div class="sort-row">

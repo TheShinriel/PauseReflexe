@@ -44,14 +44,14 @@ function renderStateBadges() {
   }
 
   if (currentDomainIsBlocked()) {
-    setPill(domainStatusEl, 'Bloqué', 'blocked');
-    blockButton.textContent = 'Déjà bloqué';
+    setPill(domainStatusEl, 'En pause', 'blocked');
+    blockButton.textContent = 'Déjà en pause';
     blockButton.disabled = true;
     return;
   }
 
-  setPill(domainStatusEl, 'Non bloqué', 'safe');
-  blockButton.textContent = 'Bloquer ce site';
+  setPill(domainStatusEl, 'Pas en pause', 'safe');
+  blockButton.textContent = 'Mettre ce site en pause';
   blockButton.disabled = false;
 }
 
@@ -83,7 +83,7 @@ function renderBlockedSites() {
   if (items.length === 0) {
     const empty = document.createElement('li');
     empty.className = 'empty';
-    empty.textContent = 'Aucun site bloqué pour le moment.';
+    empty.textContent = 'Aucun site en pause pour le moment.';
     blockedSitesListEl.append(empty);
     return;
   }
@@ -101,19 +101,19 @@ function renderBlockedSites() {
 
     const meta = document.createElement('span');
     meta.className = 'site-meta';
-    meta.textContent = item.isCurrent ? 'Site courant' : 'Blocage permanent';
+    meta.textContent = item.isCurrent ? 'Site actuel' : 'Pause active';
 
     name.append(domain, meta);
 
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'button-danger-soft';
-    button.textContent = 'Débloquer';
+    button.textContent = 'Retirer';
     button.addEventListener('click', async () => {
       debug('popup:unblock-click', { domain: item.domain, isCurrent: item.isCurrent });
       button.disabled = true;
       const response = await sendMessage({ type: 'UNBLOCK_DOMAIN', domain: item.domain });
-      setStatus(response.ok ? `${item.domain} est débloqué.` : response.error);
+      setStatus(response.ok ? `${item.domain} n’est plus en pause.` : response.error);
       await refreshState();
     });
 
@@ -158,7 +158,7 @@ blockButton.addEventListener('click', async () => {
   debug('popup:block-click', { currentDomain });
   blockButton.disabled = true;
   const response = await sendMessage({ type: 'BLOCK_DOMAIN', domain: currentDomain });
-  setStatus(response.ok ? `${currentDomain} est bloqué.` : response.error);
+  setStatus(response.ok ? `${currentDomain} est en pause.` : response.error);
   await refreshState();
 });
 
@@ -168,17 +168,17 @@ pauseSwitch.addEventListener('change', async () => {
   debug('popup:pause-change', { paused: nextPaused, currentPaused });
 
   if (requiresPauseConfirmation({ currentPaused, nextPaused })) {
-    const confirmed = window.confirm('Désactiver les blocages pour cette session ?\n\nCette action est volontaire et restera active jusqu’à réactivation ou fermeture du navigateur.');
+    const confirmed = window.confirm('Tu vas désactiver tes pauses jusqu’à la fermeture du navigateur. C’est bien volontaire ?');
     debug('popup:pause-confirmation', { confirmed });
     if (!confirmed) {
       pauseSwitch.checked = currentPaused;
-      setStatus('Désactivation annulée.');
+      setStatus('Les pauses restent actives.');
       return;
     }
   }
 
   const response = await sendMessage({ type: 'SET_PAUSED', paused: nextPaused });
-  setStatus(response.ok ? (nextPaused ? 'Blocages désactivés pour cette session.' : 'Blocages réactivés.') : response.error);
+  setStatus(response.ok ? (nextPaused ? 'Pauses désactivées pour cette session.' : 'Pauses réactivées.') : response.error);
   await refreshState();
 });
 

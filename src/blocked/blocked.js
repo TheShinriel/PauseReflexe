@@ -1,7 +1,9 @@
+import { getExceptionCta, getRandomBlockedPageMessage } from '../shared/copy.js';
 import { debug } from '../shared/debug.js';
 import { BYPASS_DURATIONS_MINUTES, getDefaultDuration, getDurationLabel } from '../shared/durations.js';
 
 const domainEl = document.querySelector('#domain');
+const blockedMessageEl = document.querySelector('#blockedMessage');
 const durationLabel = document.querySelector('#durationLabel');
 const durationOptionsEl = document.querySelector('#durationOptions');
 const continueButton = document.querySelector('#continueButton');
@@ -13,6 +15,7 @@ const originalUrl = extractOriginalUrl();
 let selectedDuration = getDefaultDuration();
 
 domainEl.textContent = domain || 'ce site';
+blockedMessageEl.textContent = getRandomBlockedPageMessage();
 debug('blocked-page:init', { domain, hasOriginalUrl: Boolean(originalUrl) });
 
 function extractOriginalUrl() {
@@ -29,7 +32,7 @@ function selectedMinutes() {
 function updateDuration(minutes) {
   selectedDuration = BYPASS_DURATIONS_MINUTES.includes(minutes) ? minutes : getDefaultDuration();
   durationLabel.textContent = getDurationLabel(selectedDuration);
-  continueButton.textContent = `Continuer pour ${getDurationLabel(selectedDuration)}`;
+  continueButton.textContent = getExceptionCta(selectedDuration);
 
   for (const button of durationOptionsEl.querySelectorAll('[data-minutes]')) {
     const isSelected = Number(button.dataset.minutes) === selectedDuration;
@@ -63,12 +66,12 @@ continueButton.addEventListener('click', async () => {
   debug('blocked-page:allow-response', { ok: response?.ok, error: response?.error, domain, minutes });
 
   if (!response.ok) {
-    statusEl.textContent = response.error;
+    statusEl.textContent = response.error ?? 'L’exception temporaire n’a pas pu être créée.';
     continueButton.disabled = false;
     return;
   }
 
-  statusEl.textContent = `Débloqué pour ${getDurationLabel(minutes)}.`;
+  statusEl.textContent = `Exception active pour ${getDurationLabel(minutes)}.`;
   debug('blocked-page:redirect-original', { originalUrl });
   window.location.replace(originalUrl);
 });

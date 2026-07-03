@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Site Blocker",
+  "name": "Pause Réflexe",
   "version": "0.1.0",
-  "description": "Soft voluntary site blocker for habit change.",
+  "description": "Reprends la main sur les sites que tu ouvres par réflexe.",
   "permissions": [
     "activeTab",
     "declarativeNetRequest",
@@ -14,7 +14,7 @@
     "https://*/*"
   ],
   "action": {
-    "default_title": "Site Blocker",
+    "default_title": "Pause Réflexe",
     "default_popup": "popup/popup.html"
   },
   "background": {

@@ -1,4 +1,4 @@
-const PREFIX = '[site-blocker]';
+const PREFIX = '[pause-reflexe]';
 
 export function debug(event, details = undefined) {
   if (details === undefined) {

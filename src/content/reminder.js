@@ -1,5 +1,5 @@
 const REMINDER_DELAY_MS = 10 * 60 * 1000;
-const DEBUG_PREFIX = '[site-blocker]';
+const DEBUG_PREFIX = '[pause-reflexe]';
 
 function debug(event, details = undefined) {
   if (details === undefined) {
@@ -30,20 +30,20 @@ async function getSessionState() {
 }
 
 function showReminder(domain) {
-  if (document.querySelector('#site-blocker-reminder')) {
+  if (document.querySelector('#pause-reflexe-reminder')) {
     debug('content:reminder-skipped-existing', { domain });
     return;
   }
 
   debug('content:reminder-show', { domain });
   const banner = document.createElement('div');
-  banner.id = 'site-blocker-reminder';
+  banner.id = 'pause-reflexe-reminder';
 
   const title = document.createElement('strong');
-  title.textContent = 'Rappel doux';
+  title.textContent = 'Encore utile ?';
 
   const message = document.createElement('span');
-  message.textContent = `Tu avais bloqué ${domain}. Est-ce encore utile d’être ici ?`;
+  message.textContent = 'Tu avais ouvert ce site pour quelques minutes. Tu veux toujours rester ici ?';
 
   const dismiss = document.createElement('span');
   dismiss.textContent = 'Masquer';

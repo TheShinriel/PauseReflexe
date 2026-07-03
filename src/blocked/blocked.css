@@ -40,9 +40,15 @@ h1 {
   vertical-align: middle;
 }
 
-.muted {
+.muted,
+.duration-help {
   line-height: 1.5;
   margin: 0;
+}
+
+.duration-help {
+  color: var(--color-muted);
+  font-size: 13px;
 }
 
 .duration-panel {

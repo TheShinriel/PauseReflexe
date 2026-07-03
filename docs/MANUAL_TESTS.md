@@ -8,21 +8,21 @@
 4. Select `/Users/shinriel/projects/perso/site-blocker/src`.
 5. Open `https://example.com`.
 6. Click the extension icon.
-7. Click “Bloquer ce site”.
+7. Click “Mettre ce site en pause”.
 8. Reload `https://example.com`.
-9. Expected: redirected to the extension blocked page.
-10. Choose 5/10/30 min with the segmented duration buttons and click temporary unblock.
+9. Expected: redirected to the extension pause page.
+10. Choose 5/10/30 min with the segmented duration buttons and click temporary exception.
 11. Expected: CTA label follows the selected duration and original site opens.
-12. Open “Sites bloqués” in the popup.
-13. Expected: current site appears first if blocked, with coherent card/badge styling.
-14. Click “Débloquer”.
+12. Open “Sites en pause” in the popup.
+13. Expected: current site appears first if paused, with coherent card/badge styling.
+14. Click “Retirer”.
 15. Expected: site is removed from the list and becomes accessible after reload.
 16. Toggle the quick pause switch next to the global “Actif” badge.
-17. Expected: disabling blockers asks for confirmation; cancelling keeps blockers active.
+17. Expected: disabling pauses asks for confirmation; cancelling keeps pauses active.
 18. Confirm quick pause.
-19. Expected: global badge switches to paused and blocked sites are accessible until pause is disabled or browser closes.
+19. Expected: global badge switches to paused and sites in pause are accessible until pause is disabled or browser closes.
 20. Toggle the quick pause switch again.
-21. Expected: blockers are re-enabled without confirmation.
+21. Expected: pauses are re-enabled without confirmation.
 22. Visual check: popup, blocked page, and reminder share the same calm blue/white visual language.
 
 ## Windows Chrome / Firefox later
@@ -31,6 +31,6 @@ Repeat the same checklist.
 
 Extra checks:
 - `www.example.com` and subdomains are blocked when `example.com` is blocked.
-- The blocked page remains calm/non-culpabilizing.
-- Temporary unblock expires and the site is blocked again.
-- Reminder appears after 10 minutes on a temporarily unblocked site.
+- The pause page remains calm/non-culpabilizing.
+- Temporary exception expires and the site is paused again.
+- Reminder appears after 10 minutes on a temporary exception.

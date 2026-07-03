@@ -3,18 +3,19 @@
   <head>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="blocked.css" />
-    <title>Site bloqué</title>
+    <title>Pause avant d’ouvrir</title>
   </head>
   <body>
     <main class="blocked-shell">
       <section class="app-card blocked-card">
-        <p class="eyebrow">Pause volontaire</p>
-        <h1>Ce site est bloqué</h1>
+        <p class="eyebrow">Pause Réflexe</p>
+        <h1>Pause avant d’ouvrir</h1>
         <p class="lead">
-          Tu as choisi de limiter <strong id="domain" class="domain-chip">ce site</strong> pour casser une habitude, pas pour te punir.
+          <strong id="domain" class="domain-chip">ce site</strong>
+          <span id="blockedMessage">Ce site est en pause. Tu peux continuer, mais fais-le volontairement.</span>
         </p>
         <p class="muted">
-          Si tu veux vraiment continuer maintenant, choisis une exception temporaire.
+          Cette pause est là pour t’aider à reprendre la main, pas pour te punir.
         </p>
 
         <div class="duration-panel" aria-labelledby="durationTitle">
@@ -22,6 +23,7 @@
             <h2 id="durationTitle" class="section-title">Exception temporaire</h2>
             <span id="durationLabel" class="status-pill warning">10 min</span>
           </div>
+          <p class="duration-help">Si tu veux vraiment continuer, choisis une durée courte.</p>
           <div id="durationOptions" class="segment-group" role="group" aria-label="Durée temporaire">
             <button class="segment-button" type="button" data-minutes="5">5 min</button>
             <button class="segment-button" type="button" data-minutes="10" aria-pressed="true">10 min</button>
@@ -29,7 +31,7 @@
           </div>
         </div>
 
-        <button id="continueButton" class="button-primary" type="button">Continuer pour 10 min</button>
+        <button id="continueButton" class="button-primary" type="button">Faire une exception de 10 min</button>
         <p id="status" role="status"></p>
       </section>
     </main>
