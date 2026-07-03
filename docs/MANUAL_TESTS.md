@@ -17,9 +17,13 @@
 13. Expected: current site appears first if blocked, with coherent card/badge styling.
 14. Click “Débloquer”.
 15. Expected: site is removed from the list and becomes accessible after reload.
-16. Toggle pause in popup.
-17. Expected: global badge switches between active/paused and blocked sites are accessible until pause is disabled or browser closes.
-18. Visual check: popup, blocked page, and reminder share the same calm blue/white visual language.
+16. Toggle the quick pause switch next to the global “Actif” badge.
+17. Expected: disabling blockers asks for confirmation; cancelling keeps blockers active.
+18. Confirm quick pause.
+19. Expected: global badge switches to paused and blocked sites are accessible until pause is disabled or browser closes.
+20. Toggle the quick pause switch again.
+21. Expected: blockers are re-enabled without confirmation.
+22. Visual check: popup, blocked page, and reminder share the same calm blue/white visual language.
 
 ## Windows Chrome / Firefox later
 

@@ -1,6 +1,7 @@
 import { buildBlockedSiteList } from '../shared/blocked-sites.js';
 import { debug } from '../shared/debug.js';
 import { normalizeSiteDomain } from '../shared/domain.js';
+import { requiresPauseConfirmation } from '../shared/pause-confirmation.js';
 
 const domainEl = document.querySelector('#domain');
 const blockButton = document.querySelector('#blockButton');
@@ -162,9 +163,22 @@ blockButton.addEventListener('click', async () => {
 });
 
 pauseSwitch.addEventListener('change', async () => {
-  debug('popup:pause-change', { paused: pauseSwitch.checked });
-  const response = await sendMessage({ type: 'SET_PAUSED', paused: pauseSwitch.checked });
-  setStatus(response.ok ? 'Préférence de session mise à jour.' : response.error);
+  const nextPaused = pauseSwitch.checked;
+  const currentPaused = Boolean(lastState.paused);
+  debug('popup:pause-change', { paused: nextPaused, currentPaused });
+
+  if (requiresPauseConfirmation({ currentPaused, nextPaused })) {
+    const confirmed = window.confirm('Désactiver les blocages pour cette session ?\n\nCette action est volontaire et restera active jusqu’à réactivation ou fermeture du navigateur.');
+    debug('popup:pause-confirmation', { confirmed });
+    if (!confirmed) {
+      pauseSwitch.checked = currentPaused;
+      setStatus('Désactivation annulée.');
+      return;
+    }
+  }
+
+  const response = await sendMessage({ type: 'SET_PAUSED', paused: nextPaused });
+  setStatus(response.ok ? (nextPaused ? 'Blocages désactivés pour cette session.' : 'Blocages réactivés.') : response.error);
   await refreshState();
 });
 
