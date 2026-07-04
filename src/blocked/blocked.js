@@ -8,7 +8,6 @@ const blockedMessageEl = document.querySelector('#blockedMessage');
 const durationLabel = document.querySelector('#durationLabel');
 const durationSlider = document.querySelector('#durationSlider');
 const continueButton = document.querySelector('#continueButton');
-const debugTwoSecondButton = document.querySelector('#debugTwoSecondButton');
 const statusEl = document.querySelector('#status');
 
 const params = new URLSearchParams(window.location.search);
@@ -24,11 +23,6 @@ checkAndRedirectIfUnblocked('init').catch((error) => {
   debug('blocked-page:redirect-check-error', { reason: 'init', error: error.message });
 });
 
-if (isDebugBypassEnabled()) {
-  debugTwoSecondButton.hidden = false;
-  debug('blocked-page:debug-2s-enabled');
-}
-
 function extractOriginalUrl() {
   const marker = '&url=';
   const index = window.location.href.indexOf(marker);
@@ -38,10 +32,6 @@ function extractOriginalUrl() {
 
 function selectedMinutes() {
   return selectedDuration;
-}
-
-function isDebugBypassEnabled() {
-  return params.get('debug') === '1' || window.localStorage.getItem('pause-reflexe-debug') === 'true';
 }
 
 function updateDuration(minutes) {
@@ -119,15 +109,6 @@ continueButton.addEventListener('click', async () => {
     eventName: 'blocked-page:allow-click',
     label: getDurationLabel(minutes),
     minutes,
-  });
-});
-
-debugTwoSecondButton.addEventListener('click', async () => {
-  await allowAndRedirect({
-    button: debugTwoSecondButton,
-    eventName: 'blocked-page:debug-allow-2s-click',
-    label: '2 s',
-    minutes: 2 / 60,
   });
 });
 

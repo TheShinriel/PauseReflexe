@@ -94,10 +94,6 @@ h1 {
   min-width: 210px;
 }
 
-.debug-button {
-  border-style: dashed;
-}
-
 #status {
   color: var(--color-muted);
   margin: 0;
