@@ -1,4 +1,5 @@
 import { buildBlockedSiteList } from '../shared/blocked-sites.js';
+import { getRandomPauseSuccessMessage } from '../shared/copy.js';
 import { debug } from '../shared/debug.js';
 import { normalizeSiteDomain } from '../shared/domain.js';
 import { requiresPauseConfirmation } from '../shared/pause-confirmation.js';
@@ -12,9 +13,13 @@ const blockedSitesListEl = document.querySelector('#blockedSitesList');
 const globalStatusEl = document.querySelector('#globalStatus');
 const domainStatusEl = document.querySelector('#domainStatus');
 const blockedCountEl = document.querySelector('#blockedCount');
+const currentSiteControlsEl = document.querySelector('#currentSiteControls');
+const pauseSuccessFrameEl = document.querySelector('#pauseSuccessFrame');
+const pauseSuccessMessageEl = document.querySelector('#pauseSuccessMessage');
 
 let currentDomain = null;
 let lastState = { blockedDomains: [], addedAtByDomain: {} };
+let showPauseSuccessFrame = false;
 
 function setStatus(message) {
   statusEl.textContent = message;
@@ -23,6 +28,24 @@ function setStatus(message) {
 function setPill(el, label, variant) {
   el.textContent = label;
   el.className = `status-pill ${variant}`;
+}
+
+function renderCurrentSiteMode() {
+  const shouldShowSuccess = Boolean(showPauseSuccessFrame && currentDomainIsBlocked());
+  currentSiteControlsEl.hidden = shouldShowSuccess;
+  pauseSuccessFrameEl.hidden = !shouldShowSuccess;
+}
+
+function showPauseSuccess() {
+  showPauseSuccessFrame = true;
+  pauseSuccessMessageEl.textContent = getRandomPauseSuccessMessage();
+  debug('popup:pause-success-frame-show', { currentDomain, message: pauseSuccessMessageEl.textContent });
+  renderCurrentSiteMode();
+}
+
+function hidePauseSuccess() {
+  showPauseSuccessFrame = false;
+  renderCurrentSiteMode();
 }
 
 function currentDomainIsBlocked() {
@@ -40,6 +63,7 @@ function renderStateBadges() {
     setPill(domainStatusEl, 'Non compatible', 'warning');
     blockButton.textContent = 'Page non compatible';
     blockButton.disabled = true;
+    renderCurrentSiteMode();
     return;
   }
 
@@ -47,12 +71,14 @@ function renderStateBadges() {
     setPill(domainStatusEl, 'En pause', 'blocked');
     blockButton.textContent = 'Déjà en pause';
     blockButton.disabled = true;
+    renderCurrentSiteMode();
     return;
   }
 
   setPill(domainStatusEl, 'Pas en pause', 'safe');
   blockButton.textContent = 'Mettre ce site en pause';
   blockButton.disabled = false;
+  renderCurrentSiteMode();
 }
 
 async function sendMessage(message) {
@@ -114,6 +140,7 @@ function renderBlockedSites() {
       button.disabled = true;
       const response = await sendMessage({ type: 'UNBLOCK_DOMAIN', domain: item.domain });
       setStatus(response.ok ? `${item.domain} n’est plus en pause.` : response.error);
+      if (response.ok && item.isCurrent) hidePauseSuccess();
       await refreshState();
     });
 
@@ -158,8 +185,13 @@ blockButton.addEventListener('click', async () => {
   debug('popup:block-click', { currentDomain });
   blockButton.disabled = true;
   const response = await sendMessage({ type: 'BLOCK_DOMAIN', domain: currentDomain });
-  setStatus(response.ok ? `${currentDomain} est en pause.` : response.error);
+  setStatus(response.ok ? '' : response.error);
   await refreshState();
+  if (response.ok) {
+    showPauseSuccess();
+  } else {
+    hidePauseSuccess();
+  }
 });
 
 pauseSwitch.addEventListener('change', async () => {

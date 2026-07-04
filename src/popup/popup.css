@@ -85,9 +85,14 @@ h1 {
   margin: 3px 0 0;
 }
 
-.current-site-card {
+.current-site-card,
+.current-site-controls {
   display: grid;
   gap: var(--space-3);
+}
+
+.current-site-controls[hidden] {
+  display: none;
 }
 
 .current-site-card .button-primary {
@@ -96,6 +101,35 @@ h1 {
 
 .domain-chip {
   justify-self: start;
+}
+
+.pause-success-frame {
+  background: linear-gradient(135deg, var(--color-primary-soft), #ffffff 78%);
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-md);
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+
+.pause-success-frame[hidden] {
+  display: none;
+}
+
+.pause-success-frame h2 {
+  color: var(--color-primary-strong);
+  font-size: 18px;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.pause-success-frame p {
+  margin: 0;
+}
+
+#pauseSuccessMessage {
+  color: var(--color-text);
+  line-height: 1.45;
 }
 
 details {

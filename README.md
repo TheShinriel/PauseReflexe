@@ -17,6 +17,7 @@ La promesse produit :
 ## Fonctionnalités
 
 - Mettre le domaine courant en pause depuis la popup.
+- Remplacer la carte du site par un cadre de félicitation après une mise en pause réussie.
 - Appliquer la pause au domaine et à ses sous-domaines.
 - Rediriger vers une page calme : “Pause avant d’ouvrir”.
 - Afficher un message aléatoire entre neutre et légèrement piquant.

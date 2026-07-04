@@ -23,12 +23,19 @@
       </header>
 
       <section class="app-card current-site-card" aria-labelledby="currentSiteTitle">
-        <div class="section-heading">
-          <h2 id="currentSiteTitle" class="section-title">Ce site</h2>
-          <span id="domainStatus" class="status-pill safe">Pas en pause</span>
+        <div id="currentSiteControls" class="current-site-controls">
+          <div class="section-heading">
+            <h2 id="currentSiteTitle" class="section-title">Ce site</h2>
+            <span id="domainStatus" class="status-pill safe">Pas en pause</span>
+          </div>
+          <p id="domain" class="domain-chip">Chargement…</p>
+          <button id="blockButton" class="button-primary" type="button">Mettre ce site en pause</button>
         </div>
-        <p id="domain" class="domain-chip">Chargement…</p>
-        <button id="blockButton" class="button-primary" type="button">Mettre ce site en pause</button>
+        <div id="pauseSuccessFrame" class="pause-success-frame" hidden>
+          <p class="eyebrow">Site mis en pause</p>
+          <h2>Bravo</h2>
+          <p id="pauseSuccessMessage">Bravo, une étape de plus vers un changement.</p>
+        </div>
       </section>
 
       <section class="app-card blocked-card" aria-labelledby="blockedSitesTitle">

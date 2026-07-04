@@ -27,10 +27,11 @@ Le besoin est un blocage volontaire, explicite, réversible temporairement, avec
 ### Fonctionnalités incluses
 
 1. Popup extension
-   - Bouton : “Bloquer ce site”
+   - Bouton : “Mettre ce site en pause”
    - Affiche le domaine courant
-   - Switch : “Désactiver les blocages”
-   - Le switch désactive les blocages jusqu’à fermeture du navigateur ou réactivation manuelle
+   - Après mise en pause réussie, remplace la carte du site par un cadre de félicitation aléatoire
+   - Switch : “Désactiver les pauses”
+   - Le switch désactive les pauses jusqu’à fermeture du navigateur ou réactivation manuelle
 
 2. Blocage domaine
    - Bloque le domaine courant et ses sous-domaines
@@ -161,8 +162,9 @@ Raisons :
 
 ## Critères d’acceptation MVP
 
-- Depuis Chrome, l’utilisateur peut bloquer le domaine courant.
-- Depuis Firefox, l’utilisateur peut bloquer le domaine courant.
+- Depuis Chrome, l’utilisateur peut mettre en pause le domaine courant.
+- Depuis Firefox, l’utilisateur peut mettre en pause le domaine courant.
+- Après mise en pause depuis la popup, un cadre de félicitation remplace la carte du site courant.
 - Le domaine bloqué et ses sous-domaines redirigent vers `blocked.html`.
 - `blocked.html` affiche un message clair et non culpabilisant.
 - L’utilisateur peut débloquer temporairement via slider.
