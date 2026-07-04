@@ -1,3 +1,4 @@
+import { shouldRedirectFromBlockedPage } from '../shared/blocked-page-redirect.js';
 import { getExceptionCta, getRandomBlockedPageMessage } from '../shared/copy.js';
 import { debug } from '../shared/debug.js';
 import { clampDuration, getDefaultDuration, getDurationLabel } from '../shared/durations.js';
@@ -18,6 +19,10 @@ let selectedDuration = getDefaultDuration();
 domainEl.textContent = domain || 'ce site';
 blockedMessageEl.textContent = getRandomBlockedPageMessage();
 debug('blocked-page:init', { domain, hasOriginalUrl: Boolean(originalUrl) });
+
+checkAndRedirectIfUnblocked('init').catch((error) => {
+  debug('blocked-page:redirect-check-error', { reason: 'init', error: error.message });
+});
 
 if (isDebugBypassEnabled()) {
   debugTwoSecondButton.hidden = false;
@@ -48,6 +53,35 @@ function updateDuration(minutes) {
   debug('blocked-page:duration-change', { minutes: selectedDuration });
 }
 
+async function getState() {
+  const response = await chrome.runtime.sendMessage({ type: 'GET_STATE' });
+  if (!response?.ok) {
+    throw new Error(response?.error ?? 'Impossible de lire l’état de Pause Réflexe.');
+  }
+
+  return response;
+}
+
+async function checkAndRedirectIfUnblocked(reason) {
+  if (!domain || !originalUrl) return false;
+
+  const state = await getState();
+  const shouldRedirect = shouldRedirectFromBlockedPage({
+    domain,
+    originalUrl,
+    blockedDomains: state.blockedDomains,
+    allowedUntilByDomain: state.allowedUntilByDomain,
+    paused: state.paused,
+  });
+
+  debug('blocked-page:redirect-check', { reason, domain, shouldRedirect, hasOriginalUrl: Boolean(originalUrl) });
+  if (!shouldRedirect) return false;
+
+  debug('blocked-page:redirect-original', { reason, originalUrl });
+  window.location.replace(originalUrl);
+  return true;
+}
+
 durationSlider.addEventListener('input', () => {
   updateDuration(durationSlider.value);
 });
@@ -75,8 +109,7 @@ async function allowAndRedirect({ minutes, label, button, eventName }) {
   }
 
   statusEl.textContent = `Exception active pour ${label}.`;
-  debug('blocked-page:redirect-original', { originalUrl });
-  window.location.replace(originalUrl);
+  await checkAndRedirectIfUnblocked('temporary-allow');
 }
 
 continueButton.addEventListener('click', async () => {
@@ -99,3 +132,9 @@ debugTwoSecondButton.addEventListener('click', async () => {
 });
 
 updateDuration(selectedDuration);
+
+chrome.storage?.onChanged?.addListener(() => {
+  checkAndRedirectIfUnblocked('storage-change').catch((error) => {
+    debug('blocked-page:redirect-check-error', { reason: 'storage-change', error: error.message });
+  });
+});
