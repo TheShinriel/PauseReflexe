@@ -1,7 +1,7 @@
 import { handleRuntimeMessage } from './messages.js';
 import { debug } from '../shared/debug.js';
 import { buildRules, ALLOW_RULE_ID_BASE, BLOCK_RULE_ID_BASE } from '../shared/rules.js';
-import { addBlockedDomain, allowDomainTemporarily, getActiveAllowedDomains, getLocalState, getSessionState, removeBlockedDomain, setPaused } from '../shared/storage.js';
+import { addBlockedDomain, allowDomainTemporarily, extendTemporaryAllow, getActiveAllowedDomains, getLocalState, getSessionState, removeBlockedDomain, removeTemporaryAllow, setPaused } from '../shared/storage.js';
 
 const MAX_RULES_TO_CLEAR = 5000;
 
@@ -48,10 +48,13 @@ export async function rebuildRules() {
 const messageDependencies = {
   addBlockedDomain,
   allowDomainTemporarily,
+  extendTemporaryAllow,
   getLocalState,
   getSessionState,
   rebuildRules,
   removeBlockedDomain,
+  removeTemporaryAllow,
+  scheduleRebuildRules: (delayMs) => setTimeout(rebuildRules, delayMs),
   setPaused,
   closeTab: (tabId) => chrome.tabs.remove(tabId),
   debug,

@@ -27,20 +27,27 @@ function normalizeHost(hostname) {
 }
 
 async function getSessionState() {
-  const storage = chrome.storage.session ?? chrome.storage.local;
-  return storage.get({ allowedUntilByDomain: {} });
+  const response = await chrome.runtime.sendMessage({ type: 'GET_STATE' });
+  if (!response?.ok) {
+    throw new Error(response?.error ?? 'Impossible de lire l’état de Pause Réflexe.');
+  }
+
+  return { allowedUntilByDomain: response.allowedUntilByDomain ?? {} };
 }
 
-function applyBannerStyle(banner) {
+function applyBannerStyle(banner, placement = 'bottom') {
+  const placementStyle = placement === 'center'
+    ? { top: '50%', bottom: 'auto', transform: 'translate(-50%, -50%)' }
+    : { bottom: '24px', top: 'auto', transform: 'translateX(-50%)' };
+
   Object.assign(banner.style, {
     position: 'fixed',
     left: '50%',
-    bottom: '24px',
-    transform: 'translateX(-50%)',
+    ...placementStyle,
     zIndex: '2147483647',
     maxWidth: '560px',
     width: 'calc(100% - 32px)',
-    padding: '14px 16px',
+    padding: placement === 'center' ? '20px 22px' : '14px 16px',
     border: '1px solid #bfdbfe',
     borderRadius: '16px',
     background: '#ffffff',
@@ -89,7 +96,7 @@ function applyLinkButtonStyle(button) {
   });
 }
 
-function buildBanner({ id, titleText, messageText }) {
+function buildBanner({ id, titleText, messageText, placement = 'bottom' }) {
   const banner = document.createElement('div');
   banner.id = id;
 
@@ -100,7 +107,7 @@ function buildBanner({ id, titleText, messageText }) {
   message.textContent = messageText;
 
   banner.append(title, message);
-  applyBannerStyle(banner);
+  applyBannerStyle(banner, placement);
   applyTitleStyle(title);
   applyMessageStyle(message);
 
@@ -153,6 +160,7 @@ function showExpiryAlert(domain) {
     id: EXPIRY_ALERT_ID,
     titleText: 'Temps écoulé',
     messageText: 'L’exception temporaire est terminée. Tu veux fermer cette page maintenant ?',
+    placement: 'center',
   });
 
   const close = document.createElement('button');
@@ -168,9 +176,21 @@ function showExpiryAlert(domain) {
   ignore.type = 'button';
   ignore.textContent = 'Ignorer';
   applyLinkButtonStyle(ignore);
-  ignore.addEventListener('click', () => {
+  ignore.addEventListener('click', async () => {
     debug('content:expiry-alert-ignore-click', { domain });
+    ignore.disabled = true;
+    const response = await chrome.runtime.sendMessage({ type: 'EXTEND_TEMPORARY_ALLOW', domain });
+    debug('content:expiry-alert-ignore-response', { domain, ok: response?.ok, error: response?.error, minutes: response?.minutes });
+
+    if (!response?.ok) {
+      ignore.disabled = false;
+      return;
+    }
+
     banner.remove();
+    setTimeout(() => {
+      showExpiryAlert(domain);
+    }, response.minutes * 60 * 1000);
   });
 
   const actions = document.createElement('div');
@@ -186,7 +206,7 @@ function getSoftReminderDelayMs(until, now) {
   return remaining > SOFT_REMINDER_DELAY_MS ? SOFT_REMINDER_DELAY_MS : null;
 }
 
-(async () => {
+async function initTemporaryExceptionAlerts() {
   const domain = normalizeHost(window.location.hostname);
   debug('content:init', { domain, url: window.location.href });
   const { allowedUntilByDomain } = await getSessionState();
@@ -212,4 +232,8 @@ function getSoftReminderDelayMs(until, now) {
   setTimeout(() => {
     showExpiryAlert(domain);
   }, expiryDelayMs);
-})();
+}
+
+initTemporaryExceptionAlerts().catch((error) => {
+  debug('content:init:error', { error: error.message });
+});

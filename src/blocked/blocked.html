@@ -23,15 +23,24 @@
             <h2 id="durationTitle" class="section-title">Exception temporaire</h2>
             <span id="durationLabel" class="status-pill warning">10 min</span>
           </div>
-          <p class="duration-help">Si tu veux vraiment continuer, choisis une durée courte.</p>
-          <div id="durationOptions" class="segment-group" role="group" aria-label="Durée temporaire">
-            <button class="segment-button" type="button" data-minutes="5">5 min</button>
-            <button class="segment-button" type="button" data-minutes="10" aria-pressed="true">10 min</button>
-            <button class="segment-button" type="button" data-minutes="30">30 min</button>
+          <p class="duration-help">Choisis juste le temps utile. Tu peux ajuster finement, sans partir directement sur le maximum.</p>
+          <div class="slider-control">
+            <input id="durationSlider" type="range" min="2" max="30" step="1" value="10" aria-label="Durée temporaire en minutes" />
+            <div class="slider-scale" aria-hidden="true">
+              <span>2 min</span>
+              <span>10 min</span>
+              <span>20 min</span>
+              <span>30 min</span>
+            </div>
           </div>
         </div>
 
-        <button id="continueButton" class="button-primary" type="button">Faire une exception de 10 min</button>
+        <div class="action-row">
+          <button id="continueButton" class="button-primary" type="button">Faire une exception de 10 min</button>
+          <button id="debugTwoSecondButton" class="button-secondary debug-button" type="button" hidden>
+            Debug : exception 2 s
+          </button>
+        </div>
         <p id="status" role="status"></p>
       </section>
     </main>

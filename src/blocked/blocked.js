@@ -1,12 +1,13 @@
 import { getExceptionCta, getRandomBlockedPageMessage } from '../shared/copy.js';
 import { debug } from '../shared/debug.js';
-import { BYPASS_DURATIONS_MINUTES, getDefaultDuration, getDurationLabel } from '../shared/durations.js';
+import { clampDuration, getDefaultDuration, getDurationLabel } from '../shared/durations.js';
 
 const domainEl = document.querySelector('#domain');
 const blockedMessageEl = document.querySelector('#blockedMessage');
 const durationLabel = document.querySelector('#durationLabel');
-const durationOptionsEl = document.querySelector('#durationOptions');
+const durationSlider = document.querySelector('#durationSlider');
 const continueButton = document.querySelector('#continueButton');
+const debugTwoSecondButton = document.querySelector('#debugTwoSecondButton');
 const statusEl = document.querySelector('#status');
 
 const params = new URLSearchParams(window.location.search);
@@ -17,6 +18,11 @@ let selectedDuration = getDefaultDuration();
 domainEl.textContent = domain || 'ce site';
 blockedMessageEl.textContent = getRandomBlockedPageMessage();
 debug('blocked-page:init', { domain, hasOriginalUrl: Boolean(originalUrl) });
+
+if (isDebugBypassEnabled()) {
+  debugTwoSecondButton.hidden = false;
+  debug('blocked-page:debug-2s-enabled');
+}
 
 function extractOriginalUrl() {
   const marker = '&url=';
@@ -29,35 +35,32 @@ function selectedMinutes() {
   return selectedDuration;
 }
 
+function isDebugBypassEnabled() {
+  return params.get('debug') === '1' || window.localStorage.getItem('pause-reflexe-debug') === 'true';
+}
+
 function updateDuration(minutes) {
-  selectedDuration = BYPASS_DURATIONS_MINUTES.includes(minutes) ? minutes : getDefaultDuration();
+  selectedDuration = clampDuration(minutes);
   durationLabel.textContent = getDurationLabel(selectedDuration);
   continueButton.textContent = getExceptionCta(selectedDuration);
-
-  for (const button of durationOptionsEl.querySelectorAll('[data-minutes]')) {
-    const isSelected = Number(button.dataset.minutes) === selectedDuration;
-    button.setAttribute('aria-pressed', String(isSelected));
-  }
+  durationSlider.value = String(selectedDuration);
 
   debug('blocked-page:duration-change', { minutes: selectedDuration });
 }
 
-durationOptionsEl.addEventListener('click', (event) => {
-  const button = event.target.closest('[data-minutes]');
-  if (!button) return;
-  updateDuration(Number(button.dataset.minutes));
+durationSlider.addEventListener('input', () => {
+  updateDuration(durationSlider.value);
 });
 
-continueButton.addEventListener('click', async () => {
-  debug('blocked-page:allow-click', { domain, hasOriginalUrl: Boolean(originalUrl), minutes: selectedMinutes() });
+async function allowAndRedirect({ minutes, label, button, eventName }) {
+  debug(eventName, { domain, hasOriginalUrl: Boolean(originalUrl), minutes });
   if (!domain || !originalUrl) {
     statusEl.textContent = 'Impossible de retrouver le site d’origine.';
-    debug('blocked-page:allow-aborted', { domain, hasOriginalUrl: Boolean(originalUrl) });
+    debug('blocked-page:allow-aborted', { domain, hasOriginalUrl: Boolean(originalUrl), minutes });
     return;
   }
 
-  continueButton.disabled = true;
-  const minutes = selectedMinutes();
+  button.disabled = true;
   const response = await chrome.runtime.sendMessage({
     type: 'ALLOW_TEMPORARILY',
     domain,
@@ -67,13 +70,32 @@ continueButton.addEventListener('click', async () => {
 
   if (!response.ok) {
     statusEl.textContent = response.error ?? 'L’exception temporaire n’a pas pu être créée.';
-    continueButton.disabled = false;
+    button.disabled = false;
     return;
   }
 
-  statusEl.textContent = `Exception active pour ${getDurationLabel(minutes)}.`;
+  statusEl.textContent = `Exception active pour ${label}.`;
   debug('blocked-page:redirect-original', { originalUrl });
   window.location.replace(originalUrl);
+}
+
+continueButton.addEventListener('click', async () => {
+  const minutes = selectedMinutes();
+  await allowAndRedirect({
+    button: continueButton,
+    eventName: 'blocked-page:allow-click',
+    label: getDurationLabel(minutes),
+    minutes,
+  });
+});
+
+debugTwoSecondButton.addEventListener('click', async () => {
+  await allowAndRedirect({
+    button: debugTwoSecondButton,
+    eventName: 'blocked-page:debug-allow-2s-click',
+    label: '2 s',
+    minutes: 2 / 60,
+  });
 });
 
 updateDuration(selectedDuration);

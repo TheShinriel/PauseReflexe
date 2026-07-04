@@ -85,14 +85,37 @@ h1 {
   margin: 3px 0 0;
 }
 
-.current-site-card,
-.current-site-controls {
+.temporary-allow-card {
+  align-items: center;
+  background: linear-gradient(135deg, #fff7ed, #ffffff 72%);
+  border-color: #fed7aa;
   display: grid;
   gap: var(--space-3);
 }
 
-.current-site-controls[hidden] {
+.temporary-allow-card[hidden] {
   display: none;
+}
+
+.temporary-allow-title {
+  color: var(--color-text);
+  line-height: 1.4;
+  margin: var(--space-1) 0 0;
+}
+
+.temporary-allow-title strong {
+  color: #c2410c;
+  font-family: var(--font-mono);
+}
+
+.temporary-allow-card .button-primary {
+  width: 100%;
+}
+
+.current-site-card,
+.current-site-controls {
+  display: grid;
+  gap: var(--space-3);
 }
 
 .current-site-card .button-primary {
@@ -101,35 +124,6 @@ h1 {
 
 .domain-chip {
   justify-self: start;
-}
-
-.pause-success-frame {
-  background: linear-gradient(135deg, var(--color-primary-soft), #ffffff 78%);
-  border: 1px solid #bfdbfe;
-  border-radius: var(--radius-md);
-  display: grid;
-  gap: var(--space-2);
-  padding: var(--space-3);
-}
-
-.pause-success-frame[hidden] {
-  display: none;
-}
-
-.pause-success-frame h2 {
-  color: var(--color-primary-strong);
-  font-size: 18px;
-  line-height: 1.1;
-  margin: 0;
-}
-
-.pause-success-frame p {
-  margin: 0;
-}
-
-#pauseSuccessMessage {
-  color: var(--color-text);
-  line-height: 1.45;
 }
 
 details {

@@ -40,7 +40,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["blocked/blocked.html"],
+      "resources": ["blocked/blocked.html", "paused/paused.html"],
       "matches": ["http://*/*", "https://*/*"]
     }
   ]

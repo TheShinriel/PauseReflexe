@@ -1,5 +1,4 @@
 import { buildBlockedSiteList } from '../shared/blocked-sites.js';
-import { getRandomPauseSuccessMessage } from '../shared/copy.js';
 import { debug } from '../shared/debug.js';
 import { normalizeSiteDomain } from '../shared/domain.js';
 import { requiresPauseConfirmation } from '../shared/pause-confirmation.js';
@@ -13,13 +12,14 @@ const blockedSitesListEl = document.querySelector('#blockedSitesList');
 const globalStatusEl = document.querySelector('#globalStatus');
 const domainStatusEl = document.querySelector('#domainStatus');
 const blockedCountEl = document.querySelector('#blockedCount');
-const currentSiteControlsEl = document.querySelector('#currentSiteControls');
-const pauseSuccessFrameEl = document.querySelector('#pauseSuccessFrame');
-const pauseSuccessMessageEl = document.querySelector('#pauseSuccessMessage');
+const temporaryAllowBannerEl = document.querySelector('#temporaryAllowBanner');
+const temporaryAllowRemainingEl = document.querySelector('#temporaryAllowRemaining');
+const resumePauseButton = document.querySelector('#resumePauseButton');
 
 let currentDomain = null;
+let activeTabId = null;
 let lastState = { blockedDomains: [], addedAtByDomain: {} };
-let showPauseSuccessFrame = false;
+let timerIntervalId = null;
 
 function setStatus(message) {
   statusEl.textContent = message;
@@ -30,26 +30,50 @@ function setPill(el, label, variant) {
   el.className = `status-pill ${variant}`;
 }
 
-function renderCurrentSiteMode() {
-  const shouldShowSuccess = Boolean(showPauseSuccessFrame && currentDomainIsBlocked());
-  currentSiteControlsEl.hidden = shouldShowSuccess;
-  pauseSuccessFrameEl.hidden = !shouldShowSuccess;
-}
+async function replaceActiveTabWithPauseSuccess() {
+  if (!Number.isInteger(activeTabId) || !currentDomain) {
+    debug('popup:pause-success-tab-replace-skipped', { activeTabId, currentDomain });
+    return;
+  }
 
-function showPauseSuccess() {
-  showPauseSuccessFrame = true;
-  pauseSuccessMessageEl.textContent = getRandomPauseSuccessMessage();
-  debug('popup:pause-success-frame-show', { currentDomain, message: pauseSuccessMessageEl.textContent });
-  renderCurrentSiteMode();
-}
-
-function hidePauseSuccess() {
-  showPauseSuccessFrame = false;
-  renderCurrentSiteMode();
+  const url = chrome.runtime.getURL(`/paused/paused.html?domain=${encodeURIComponent(currentDomain)}`);
+  debug('popup:pause-success-tab-replace', { activeTabId, currentDomain, url });
+  await chrome.tabs.update(activeTabId, { url });
 }
 
 function currentDomainIsBlocked() {
   return Boolean(currentDomain && lastState.blockedDomains?.includes(currentDomain));
+}
+
+function getCurrentTemporaryAllowUntil(now = Date.now()) {
+  if (!currentDomain || !currentDomainIsBlocked()) return null;
+  const until = Number(lastState.allowedUntilByDomain?.[currentDomain]);
+  return Number.isFinite(until) && until > now ? until : null;
+}
+
+function formatRemainingTime(until, now = Date.now()) {
+  const remainingSeconds = Math.max(0, Math.ceil((until - now) / 1000));
+  const minutes = Math.floor(remainingSeconds / 60);
+  const seconds = remainingSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+function renderTemporaryAllowBanner() {
+  const until = getCurrentTemporaryAllowUntil();
+  temporaryAllowBannerEl.hidden = !until;
+
+  if (!until) {
+    if (timerIntervalId !== null) {
+      clearInterval(timerIntervalId);
+      timerIntervalId = null;
+    }
+    return;
+  }
+
+  temporaryAllowRemainingEl.textContent = formatRemainingTime(until);
+  if (timerIntervalId === null) {
+    timerIntervalId = setInterval(renderTemporaryAllowBanner, 1000);
+  }
 }
 
 function renderStateBadges() {
@@ -63,7 +87,6 @@ function renderStateBadges() {
     setPill(domainStatusEl, 'Non compatible', 'warning');
     blockButton.textContent = 'Page non compatible';
     blockButton.disabled = true;
-    renderCurrentSiteMode();
     return;
   }
 
@@ -71,14 +94,12 @@ function renderStateBadges() {
     setPill(domainStatusEl, 'En pause', 'blocked');
     blockButton.textContent = 'Déjà en pause';
     blockButton.disabled = true;
-    renderCurrentSiteMode();
     return;
   }
 
   setPill(domainStatusEl, 'Pas en pause', 'safe');
   blockButton.textContent = 'Mettre ce site en pause';
   blockButton.disabled = false;
-  renderCurrentSiteMode();
 }
 
 async function sendMessage(message) {
@@ -140,7 +161,6 @@ function renderBlockedSites() {
       button.disabled = true;
       const response = await sendMessage({ type: 'UNBLOCK_DOMAIN', domain: item.domain });
       setStatus(response.ok ? `${item.domain} n’est plus en pause.` : response.error);
-      if (response.ok && item.isCurrent) hidePauseSuccess();
       await refreshState();
     });
 
@@ -159,12 +179,14 @@ async function refreshState() {
     paused: state.paused,
   });
   renderStateBadges();
+  renderTemporaryAllowBanner();
   renderBlockedSites();
 }
 
 async function init() {
   debug('popup:init:start');
   const tab = await getActiveTab();
+  activeTabId = tab?.id;
   debug('popup:active-tab', { url: tab?.url });
   try {
     currentDomain = normalizeSiteDomain(tab.url);
@@ -188,10 +210,21 @@ blockButton.addEventListener('click', async () => {
   setStatus(response.ok ? '' : response.error);
   await refreshState();
   if (response.ok) {
-    showPauseSuccess();
-  } else {
-    hidePauseSuccess();
+    await replaceActiveTabWithPauseSuccess();
   }
+});
+
+resumePauseButton.addEventListener('click', async () => {
+  if (!currentDomain) return;
+  debug('popup:resume-pause-click', { currentDomain });
+  resumePauseButton.disabled = true;
+  const response = await sendMessage({ type: 'REMOVE_TEMPORARY_ALLOW', domain: currentDomain });
+  setStatus(response.ok ? 'La pause est réactivée sur ce site.' : response.error);
+  await refreshState();
+  if (response.ok && Number.isInteger(activeTabId)) {
+    await chrome.tabs.reload(activeTabId);
+  }
+  resumePauseButton.disabled = false;
 });
 
 pauseSwitch.addEventListener('change', async () => {

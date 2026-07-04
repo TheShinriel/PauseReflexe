@@ -22,6 +22,16 @@
         </div>
       </header>
 
+      <section id="temporaryAllowBanner" class="app-card temporary-allow-card" hidden>
+        <div>
+          <p class="eyebrow">Pause suspendue</p>
+          <p class="temporary-allow-title">
+            Encore <strong id="temporaryAllowRemaining">--:--</strong> sur ce site.
+          </p>
+        </div>
+        <button id="resumePauseButton" class="button-primary" type="button">Remettre la pause</button>
+      </section>
+
       <section class="app-card current-site-card" aria-labelledby="currentSiteTitle">
         <div id="currentSiteControls" class="current-site-controls">
           <div class="section-heading">
@@ -30,11 +40,6 @@
           </div>
           <p id="domain" class="domain-chip">Chargement…</p>
           <button id="blockButton" class="button-primary" type="button">Mettre ce site en pause</button>
-        </div>
-        <div id="pauseSuccessFrame" class="pause-success-frame" hidden>
-          <p class="eyebrow">Site mis en pause</p>
-          <h2>Bravo</h2>
-          <p id="pauseSuccessMessage">Bravo, une étape de plus vers un changement.</p>
         </div>
       </section>
 

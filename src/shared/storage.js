@@ -1,7 +1,7 @@
 import { browserApi } from './browser-api.js';
 
 const LOCAL_DEFAULTS = { blockedDomains: [], addedAtByDomain: {} };
-const SESSION_DEFAULTS = { paused: false, allowedUntilByDomain: {} };
+const SESSION_DEFAULTS = { paused: false, allowedUntilByDomain: {}, allowedDurationByDomain: {} };
 
 export async function getLocalState() {
   return { ...LOCAL_DEFAULTS, ...(await browserApi.storage.local.get(LOCAL_DEFAULTS)) };
@@ -51,7 +51,29 @@ export async function allowDomainTemporarily(domain, minutes) {
     ...state.allowedUntilByDomain,
     [domain]: Date.now() + minutes * 60 * 1000,
   };
-  await setSessionState({ allowedUntilByDomain });
+  const allowedDurationByDomain = {
+    ...state.allowedDurationByDomain,
+    [domain]: minutes,
+  };
+  await setSessionState({ allowedUntilByDomain, allowedDurationByDomain });
+}
+
+export async function extendTemporaryAllow(domain) {
+  const state = await getSessionState();
+  const minutes = Number(state.allowedDurationByDomain[domain]);
+  if (!Number.isFinite(minutes) || minutes <= 0) {
+    return { ok: false, error: 'Durée temporaire introuvable.' };
+  }
+
+  await allowDomainTemporarily(domain, minutes);
+  return { ok: true, minutes };
+}
+
+export async function removeTemporaryAllow(domain) {
+  const state = await getSessionState();
+  const { [domain]: _untilRemoved, ...allowedUntilByDomain } = state.allowedUntilByDomain;
+  const { [domain]: _durationRemoved, ...allowedDurationByDomain } = state.allowedDurationByDomain;
+  await setSessionState({ allowedUntilByDomain, allowedDurationByDomain });
 }
 
 export async function getActiveAllowedDomains() {

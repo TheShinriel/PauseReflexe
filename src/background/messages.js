@@ -32,7 +32,30 @@ export async function handleRuntimeMessage(message, dependencies, sender = {}) {
     debug('runtime:allow-temporarily:start', { domain: message.domain, minutes });
     await dependencies.allowDomainTemporarily(message.domain, minutes);
     await dependencies.rebuildRules();
+    if (minutes < 1 && dependencies.scheduleRebuildRules) {
+      dependencies.scheduleRebuildRules(minutes * 60 * 1000 + 100);
+    }
     debug('runtime:allow-temporarily:done', { domain: message.domain, minutes });
+    return { ok: true };
+  }
+
+  if (message.type === 'EXTEND_TEMPORARY_ALLOW') {
+    debug('runtime:extend-temporary-allow:start', { domain: message.domain });
+    const result = await dependencies.extendTemporaryAllow(message.domain);
+    if (!result.ok) return result;
+    await dependencies.rebuildRules();
+    if (result.minutes < 1 && dependencies.scheduleRebuildRules) {
+      dependencies.scheduleRebuildRules(result.minutes * 60 * 1000 + 100);
+    }
+    debug('runtime:extend-temporary-allow:done', { domain: message.domain, minutes: result.minutes });
+    return { ok: true, minutes: result.minutes };
+  }
+
+  if (message.type === 'REMOVE_TEMPORARY_ALLOW') {
+    debug('runtime:remove-temporary-allow:start', { domain: message.domain });
+    await dependencies.removeTemporaryAllow(message.domain);
+    await dependencies.rebuildRules();
+    debug('runtime:remove-temporary-allow:done', { domain: message.domain });
     return { ok: true };
   }
 
