@@ -7,7 +7,8 @@
   "scripts": {
     "test": "vitest",
     "test:run": "vitest run",
-    "validate:manifest": "node -e \"JSON.parse(require('fs').readFileSync('src/manifest.json','utf8')); console.log('manifest ok')\""
+    "validate:manifest": "node -e \"JSON.parse(require('fs').readFileSync('src/manifest.json','utf8')); console.log('manifest ok')\"",
+    "package:chrome": "npm run validate:manifest && node scripts/package-chrome.mjs"
   },
   "devDependencies": {
     "vitest": "^4.1.9"
