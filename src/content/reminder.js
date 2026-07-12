@@ -32,7 +32,10 @@ async function getSessionState() {
     throw new Error(response?.error ?? 'Impossible de lire l’état de Pause Réflexe.');
   }
 
-  return { allowedUntilByDomain: response.allowedUntilByDomain ?? {} };
+  return {
+    allowedDurationByDomain: response.allowedDurationByDomain ?? {},
+    allowedUntilByDomain: response.allowedUntilByDomain ?? {},
+  };
 }
 
 function applyBannerStyle(banner, placement = 'bottom') {
@@ -75,12 +78,14 @@ function applyMessageStyle(message) {
   });
 }
 
-function applyActionRowStyle(row) {
+function applyActionRowStyle(row, { spread = false } = {}) {
   Object.assign(row.style, {
+    alignItems: 'center',
     display: 'flex',
     flexWrap: 'wrap',
-    gap: '8px',
-    marginTop: '4px',
+    gap: '10px',
+    justifyContent: spread ? 'space-between' : 'flex-start',
+    marginTop: '8px',
   });
 }
 
@@ -94,6 +99,34 @@ function applyLinkButtonStyle(button) {
     fontWeight: '700',
     padding: '0',
   });
+}
+
+function applyButtonStyle(button, variant = 'secondary') {
+  const isPrimary = variant === 'primary';
+  Object.assign(button.style, {
+    background: isPrimary ? '#2563eb' : '#ffffff',
+    border: isPrimary ? '1px solid #2563eb' : '1px solid #cbd5e1',
+    borderRadius: '999px',
+    boxShadow: isPrimary ? '0 8px 18px rgb(37 99 235 / 20%)' : 'none',
+    color: isPrimary ? '#ffffff' : '#334155',
+    cursor: 'pointer',
+    font: 'inherit',
+    fontWeight: '700',
+    minHeight: '36px',
+    padding: '8px 14px',
+  });
+}
+
+function formatTimerDuration(minutes) {
+  const value = Number(minutes);
+  if (!Number.isFinite(value) || value <= 0) return 'quelques minutes';
+
+  if (value < 1) {
+    const seconds = Math.max(1, Math.round(value * 60));
+    return `${seconds} s`;
+  }
+
+  return `${Math.round(value)} min`;
 }
 
 function buildBanner({ id, titleText, messageText, placement = 'bottom' }) {
@@ -148,54 +181,57 @@ function showReminder(domain) {
   }, 15000);
 }
 
-function showExpiryAlert(domain) {
+function showExpiryAlert(domain, durationMinutes) {
   document.querySelector(`#${REMINDER_ID}`)?.remove();
   if (document.querySelector(`#${EXPIRY_ALERT_ID}`)) {
     debug('content:expiry-alert-skipped-existing', { domain });
     return;
   }
 
-  debug('content:expiry-alert-show', { domain });
+  const timerLabel = formatTimerDuration(durationMinutes);
+  debug('content:expiry-alert-show', { domain, minutes: durationMinutes });
   const banner = buildBanner({
     id: EXPIRY_ALERT_ID,
     titleText: 'Temps écoulé',
-    messageText: 'L’exception temporaire est terminée. Tu veux fermer cette page maintenant ?',
+    messageText: 'L’exception temporaire est terminée. Tu veux fermer cette page maintenant ou relancer le timer ?',
     placement: 'center',
   });
 
   const close = document.createElement('button');
   close.type = 'button';
   close.textContent = 'Fermer l’onglet';
-  applyLinkButtonStyle(close);
+  applyButtonStyle(close, 'secondary');
   close.addEventListener('click', async () => {
     debug('content:expiry-alert-close-click', { domain });
+    close.disabled = true;
     await chrome.runtime.sendMessage({ type: 'CLOSE_CURRENT_TAB' });
+    close.disabled = false;
   });
 
-  const ignore = document.createElement('button');
-  ignore.type = 'button';
-  ignore.textContent = 'Ignorer';
-  applyLinkButtonStyle(ignore);
-  ignore.addEventListener('click', async () => {
-    debug('content:expiry-alert-ignore-click', { domain });
-    ignore.disabled = true;
+  const renew = document.createElement('button');
+  renew.type = 'button';
+  renew.textContent = `Relancer le timer de ${timerLabel}`;
+  applyButtonStyle(renew, 'primary');
+  renew.addEventListener('click', async () => {
+    debug('content:expiry-alert-renew-click', { domain });
+    renew.disabled = true;
     const response = await chrome.runtime.sendMessage({ type: 'EXTEND_TEMPORARY_ALLOW', domain });
-    debug('content:expiry-alert-ignore-response', { domain, ok: response?.ok, error: response?.error, minutes: response?.minutes });
+    debug('content:expiry-alert-renew-response', { domain, ok: response?.ok, error: response?.error, minutes: response?.minutes });
 
     if (!response?.ok) {
-      ignore.disabled = false;
+      renew.disabled = false;
       return;
     }
 
     banner.remove();
     setTimeout(() => {
-      showExpiryAlert(domain);
+      showExpiryAlert(domain, response.minutes);
     }, response.minutes * 60 * 1000);
   });
 
   const actions = document.createElement('div');
-  applyActionRowStyle(actions);
-  actions.append(close, ignore);
+  applyActionRowStyle(actions, { spread: true });
+  actions.append(close, renew);
   banner.append(actions);
 
   document.body.appendChild(banner);
@@ -209,8 +245,9 @@ function getSoftReminderDelayMs(until, now) {
 async function initTemporaryExceptionAlerts() {
   const domain = normalizeHost(window.location.hostname);
   debug('content:init', { domain, url: window.location.href });
-  const { allowedUntilByDomain } = await getSessionState();
+  const { allowedDurationByDomain, allowedUntilByDomain } = await getSessionState();
   const until = allowedUntilByDomain[domain];
+  const durationMinutes = allowedDurationByDomain[domain];
   const now = Date.now();
 
   if (!until || until <= now) {
@@ -228,9 +265,9 @@ async function initTemporaryExceptionAlerts() {
     }, reminderDelayMs);
   }
 
-  debug('content:expiry-alert-scheduled', { domain, delayMs: expiryDelayMs, until });
+  debug('content:expiry-alert-scheduled', { domain, delayMs: expiryDelayMs, until, minutes: durationMinutes });
   setTimeout(() => {
-    showExpiryAlert(domain);
+    showExpiryAlert(domain, durationMinutes);
   }, expiryDelayMs);
 }
 
